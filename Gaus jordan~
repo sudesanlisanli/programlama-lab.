@@ -1,0 +1,339 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <graphics.h>
+#include <conio.h>
+//160202014 Hanım Sude ŞANLI
+
+int main()
+{
+    int harita;
+    printf("1. veya 2. haritadan birini seciniz\n");
+
+    do
+    {
+        scanf("%d",&harita);
+        if(harita!=1 && harita!=2)
+        {
+            printf("bir daha seciniz:");
+        }
+        else
+            break;
+    }
+    while(1);
+    if(harita==1)
+    {
+        initwindow(410,414,"Harita");
+        //harita ciz
+        circle(200,200,180);
+        circle(200,200,120);
+        floodfill(100,100,-1);
+        rectangle(2,170,60,230);
+        floodfill(4,172,-1);
+        rectangle(170,2,230,60);
+        floodfill(172,4,-1);
+        rectangle(170,342,230,398);
+        floodfill(182,396,-1);
+        rectangle(342,170,398,230);
+        floodfill(396,182,-1);
+
+        int yolYogunlukMatris[4][5] = {0};
+        char yol[4]= {'a','b','c','d'};
+        char* yolSecenek[4]= {"x,t","x,y","y,z","z,t"};
+        char yonler[4][3];
+
+        for(int i=0; i<4; i++)
+        {
+            fflush(stdin);
+            printf("%c caddesi icin yon seciniz (%s): ",yol[i],yolSecenek[i]);
+            fgets(yonler[i],3,stdin);
+        }
+
+        char cadde[8]= {'a','b','c','d','x','y','z','t'};
+        int aracYogunlugu[8];
+        printf("Caddelerden gecen arac yogunlugunu giriniz,bilmediginiz caddeler icin -1 giriniz:\n");
+        do
+        {
+            int bilinmeyenSayisi = 0;
+            for(int i=0; i<8; i++)
+            {
+                fflush(stdin);
+                printf("%c caddesi icin arac yogunlugu: ",cadde[i]);
+                scanf("%d",&aracYogunlugu[i]);
+                if (aracYogunlugu[i] == -1)
+                    bilinmeyenSayisi++;
+            }
+            if (bilinmeyenSayisi >= 1)
+                break;
+            else
+                printf("Bilinmeyen sayisi cok az.\n");
+        }
+        while(1);
+        if (yonler[0][0] == 'x')
+        {
+            yolYogunlukMatris[0][0] = aracYogunlugu[4];
+            yolYogunlukMatris[0][3] = aracYogunlugu[7];
+        }
+        else
+        {
+            yolYogunlukMatris[0][0] = aracYogunlugu[7];
+            yolYogunlukMatris[0][3] = aracYogunlugu[4];
+        }
+        if (yonler[1][0] == 'x')
+        {
+            yolYogunlukMatris[1][0] = aracYogunlugu[4];
+            yolYogunlukMatris[1][1] = aracYogunlugu[5];
+        }
+        else
+        {
+            yolYogunlukMatris[1][0] = aracYogunlugu[5];
+            yolYogunlukMatris[1][1] = aracYogunlugu[4];
+        }
+        if (yonler[2][0] == 'y')
+        {
+            yolYogunlukMatris[2][1] = aracYogunlugu[5];
+            yolYogunlukMatris[2][2] = aracYogunlugu[6];
+        }
+        else
+        {
+            yolYogunlukMatris[2][1] = aracYogunlugu[6];
+            yolYogunlukMatris[2][2] = aracYogunlugu[5];
+        }
+        if (yonler[3][0] == 'z')
+        {
+            yolYogunlukMatris[3][2] = aracYogunlugu[6];
+            yolYogunlukMatris[3][3] = aracYogunlugu[7];
+        }
+        else
+        {
+            yolYogunlukMatris[3][2] = aracYogunlugu[7];
+            yolYogunlukMatris[3][3] = aracYogunlugu[6];
+        }
+        yolYogunlukMatris[0][4] = aracYogunlugu[0];
+        yolYogunlukMatris[1][4] = aracYogunlugu[1];
+        yolYogunlukMatris[2][4] = aracYogunlugu[2];
+        yolYogunlukMatris[3][4] = aracYogunlugu[3];
+
+        printf("Matris: \n");
+        for (int i=0; i<4; i++)
+        {
+            for (int j=0; j<5; j++)
+            {
+                printf("%d ",yolYogunlukMatris[i][j]);
+            }
+            printf("\n");
+        }
+
+        //Satir siralama
+        for (int i=0; i<4; i++)
+        {
+            for (int k=i+1; k<4; k++)
+            {
+                if (yolYogunlukMatris[k][i] == -1)
+                    continue;
+                if (abs(yolYogunlukMatris[i][i])<abs(yolYogunlukMatris[k][i]))
+                {
+                    for (int j=0; j<=4; j++)
+                    {
+                        int gecici=yolYogunlukMatris[i][j];
+                        yolYogunlukMatris[i][j]=yolYogunlukMatris[k][j];
+                        yolYogunlukMatris[k][j]=gecici;
+                    }
+                }
+            }
+        }
+
+        printf("\n\nSatir islemi sonrasi matris: \n");
+        for (int i=0; i<4; i++)
+        {
+            for (int j=0; j<5; j++)
+            {
+                printf("%d ",yolYogunlukMatris[i][j]);
+            }
+            printf("\n");
+        }
+
+        for (int i=0; i<4; i++)
+        {
+            for (int k=i+1; k<5; k++)
+            {
+                double kat=yolYogunlukMatris[k][i]/yolYogunlukMatris[i][i];
+                for (int j=0; j<=4; j++)
+                    yolYogunlukMatris[k][j]=yolYogunlukMatris[k][j]-kat*yolYogunlukMatris[i][j];
+            }
+        }
+        double sonuc[4] = {0};
+        for (int i=3; i>=0; i--)
+        {
+            for (int j=3; j>=i; j--)
+            {
+                //sonuc[i] = yolYogunlukMatris[i][4]/yolYogunlukMatris[i][j]
+            }
+        }
+    }
+
+
+    if(harita==2)
+    {
+        initwindow(410,414,"Harita");
+        //harita ciz
+        rectangle(2,170,398,230);
+        floodfill(200,200,-1);
+        circle(200,200,180);
+        circle(200,200,120);
+        floodfill(100,100,-1);
+        floodfill(300,300,-1);
+        rectangle(170,2,230,60);
+        floodfill(172,4,-1);
+        rectangle(170,342,230,398);
+        floodfill(182,396,-1);
+
+        int yolYogunlukMatris[5][5] = {0};
+        char yol[5]= {'a','b','c','d','e'};
+        char* yolSecenek[5]= {"x,t","x,y","y,z","z,t","t,y"};
+        char yonler[5][4];
+
+        for(int i=0; i<5; i++)
+        {
+            fflush(stdin);
+            printf("%c caddesi icin yon seciniz (%s): ",yol[i],yolSecenek[i]);
+            fgets(yonler[i],4,stdin);
+        }
+
+        char cadde[9]= {'a','b','c','d','e','x','y','z','t'};
+        int aracYogunlugu[9] = {0};
+        printf("Caddelerden gecen arac yogunlugunu giriniz,bilmediginiz caddeler icin -1 giriniz:\n");
+        do
+        {
+            int bilinmeyenSayisi = 0;
+            for(int i=0; i<9; i++)
+            {
+                fflush(stdin);
+                printf("%c caddesi icin arac yogunlugu: ",cadde[i]);
+                scanf("%d",&aracYogunlugu[i]);
+                if (aracYogunlugu[i] == -1)
+                    bilinmeyenSayisi++;
+            }
+            if (bilinmeyenSayisi >= 1)
+                break;
+            else
+                printf("Bilinmeyen sayisi cok az.\n");
+        }
+        while(1);
+        if (yonler[0][0] == 'x')
+        {
+            yolYogunlukMatris[0][0] = aracYogunlugu[5];
+            yolYogunlukMatris[0][3] = aracYogunlugu[8];
+        }
+        else
+        {
+            yolYogunlukMatris[0][0] = aracYogunlugu[8];
+            yolYogunlukMatris[0][3] = aracYogunlugu[5];
+        }
+        if (yonler[1][0] == 'x')
+        {
+            yolYogunlukMatris[1][0] = aracYogunlugu[5];
+            yolYogunlukMatris[1][1] = aracYogunlugu[6];
+        }
+        else
+        {
+            yolYogunlukMatris[1][0] = aracYogunlugu[6];
+            yolYogunlukMatris[1][1] = aracYogunlugu[5];
+        }
+        if (yonler[2][0] == 'y')
+        {
+            yolYogunlukMatris[2][1] = aracYogunlugu[6];
+            yolYogunlukMatris[2][2] = aracYogunlugu[7];
+        }
+        else
+        {
+            yolYogunlukMatris[2][1] = aracYogunlugu[7];
+            yolYogunlukMatris[2][2] = aracYogunlugu[6];
+        }
+        if (yonler[3][0] == 'z')
+        {
+            yolYogunlukMatris[3][2] = aracYogunlugu[7];
+            yolYogunlukMatris[3][3] = aracYogunlugu[8];
+        }
+        else
+        {
+            yolYogunlukMatris[3][2] = aracYogunlugu[8];
+            yolYogunlukMatris[3][3] = aracYogunlugu[7];
+        }
+        if (yonler[4][0] == 't')
+        {
+            yolYogunlukMatris[4][3] = aracYogunlugu[8];
+            yolYogunlukMatris[4][1] = aracYogunlugu[6];
+        }
+        else
+        {
+            yolYogunlukMatris[4][1] = aracYogunlugu[6];
+            yolYogunlukMatris[4][3] = aracYogunlugu[8];
+        }
+
+        yolYogunlukMatris[0][4] = aracYogunlugu[0];
+        yolYogunlukMatris[1][4] = aracYogunlugu[1];
+        yolYogunlukMatris[2][4] = aracYogunlugu[2];
+        yolYogunlukMatris[3][4] = aracYogunlugu[3];
+        yolYogunlukMatris[4][4] = aracYogunlugu[4];
+
+        printf("Matris: \n");
+        for (int i=0; i<5; i++)
+        {
+            for (int j=0; j<5; j++)
+            {
+                printf("%d ",yolYogunlukMatris[i][j]);
+            }
+            printf("\n");
+        }
+
+        //Satir siralama
+        for (int i=0; i<5; i++)
+        {
+            for (int k=i+1; k<5; k++)
+            {
+                if (yolYogunlukMatris[k][i] == -1)
+                    continue;
+                if (abs(yolYogunlukMatris[i][i])<abs(yolYogunlukMatris[k][i]))
+                {
+                    for (int j=0; j<=4; j++)
+                    {
+                        int gecici=yolYogunlukMatris[i][j];
+                        yolYogunlukMatris[i][j]=yolYogunlukMatris[k][j];
+                        yolYogunlukMatris[k][j]=gecici;
+                    }
+                }
+            }
+        }
+
+        printf("\n\nSatir islemi sonrasi matris: \n");
+        for (int i=0; i<5; i++)
+        {
+            for (int j=0; j<5; j++)
+            {
+                printf("%d ",yolYogunlukMatris[i][j]);
+            }
+            printf("\n");
+        }
+
+        for (int i=0; i<4; i++)
+        {
+            for (int k=i+1; k<5; k++)
+            {
+                double kat=yolYogunlukMatris[k][i]/yolYogunlukMatris[i][i];
+                for (int j=0; j<=5; j++)
+                    yolYogunlukMatris[k][j]=yolYogunlukMatris[k][j]-kat*yolYogunlukMatris[i][j];
+            }
+        }
+        double sonuc[5] = {0};
+        for (int i=4; i>=0; i--)
+        {
+            for (int j=4; j>=i; j--)
+            {
+                //sonuc[i] = yolYogunlukMatris[i][4]/yolYogunlukMatris[i][j];
+            }
+        }
+    }
+
+    return 0;
+}
